@@ -3,11 +3,15 @@
 
 #include "stdafx.h"
 #include "Utilities/Scanner.h"
+#include "Utilities/VTHook.h"
 #include <iostream>
 #include <iomanip>
 #include <functional>
 #include <string>
 #include <chrono>
+#include <stdio.h>
+#include <stdlib.h>
+#include "index.hpp"
 
 static HANDLE self;
 
@@ -173,62 +177,77 @@ DWORD __stdcall MAIN()
 	freopen_s(&fpConsole, "CONOUT$", "wb", stdout);
 	freopen_s(&fpConsole, "CONOUT$", "wb", stderr);
 
-	//std::cout << "hi" << std::endl;
-
-	GlobalSurfaceObject = reinterpret_cast<void ***>(GetInterface("vguimatsurface.dll", "VGUI_Surface031"));
+	//GlobalSurfaceObject = reinterpret_cast<void ***>(GetInterface("vguimatsurface.dll", "VGUI_Surface031"));
 	auto vgui_object = reinterpret_cast<void ***>(GetInterface("vgui2.dll", "VGUI_Panel009"));
 
-	std::cout << std::hex << vgui_object << std::endl;
-	std::cout << std::hex << *vgui_object << std::endl;
-	std::cout << std::hex << **vgui_object << std::endl;
+	//auto surface_vft = *GlobalSurfaceObject;
+	
+	utils::vtmanager::VTMananger vgui_vtable(vgui_object, 0x10C);
 
-	auto surface_vft = *GlobalSurfaceObject;
+	vgui_vtable.prepare_function(myPaintTraverse, 41);
+	//vgui_vtable.commit_hook();
 
-	auto vgui_vft_original = reinterpret_cast<void **>(reinterpret_cast<std::uintptr_t>(*vgui_object));
+	Sleep(15000);
+	vgui_vtable.release_hook();
 
-	oPaintTraverse = reinterpret_cast<hkPaintTraverse>(vgui_vft_original[41]);
-	oGetName = reinterpret_cast<hkGetName>(vgui_vft_original[36]);
+	//while (1)
+	//{
+	//	if (GetAsyncKeyState(VK_END))
+	//	{
+	//		std::cout << "Released" << std::endl;
+	//		break;
+	//	}
 
-	std::cout << "oPaintTraverse: 0x" << std::hex << oPaintTraverse << std::endl;
-	std::cout << "GlobalSurfaceObject: 0x" << std::hex << GlobalSurfaceObject << std::endl;
-	std::cout << "surface_vft: 0x" << std::hex << surface_vft << std::endl;
+	//	Sleep(10);
+	//}
 
-	oSetRGBA = getvfunc<fnSetRGBA>(surface_vft, 15);
-	oDrawFilledRect = getvfunc<fnDrawFilledRect>(surface_vft, 16);
-	oSetTextRGBA = getvfunc<fnSetTextRGBA>(surface_vft, 25);
-	oSetTextPosition = getvfunc<fnSetTextPosition>(surface_vft, 26);
-	oDrawPrintText = getvfunc<fnDrawPrintText>(surface_vft, 28);
+	//auto vgui_vft_original = reinterpret_cast<void **>(reinterpret_cast<std::uintptr_t>(*vgui_object));
 
-	//std::size_t const maxSize = 100;
-	//wchar_t aw[maxSize] = L"PRINT ME";
-	//std::size_t h = wcsnlen_s(aw, maxSize);
+	//oPaintTraverse = reinterpret_cast<hkPaintTraverse>(vgui_vft_original[41]);
+	//oGetName = reinterpret_cast<hkGetName>(vgui_vft_original[36]);
 
-	void *vgui_vft_hooked = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 0x10C);
+	//std::cout << "oPaintTraverse: 0x" << std::hex << oPaintTraverse << std::endl;
+	//std::cout << "GlobalSurfaceObject: 0x" << std::hex << GlobalSurfaceObject << std::endl;
+	//std::cout << "surface_vft: 0x" << std::hex << surface_vft << std::endl;
 
-	std::cout << "Allocated bytes for vtable at 0x" << std::hex << vgui_vft_hooked << std::endl;
-	std::cout << "Original at 0x" << std::hex << vgui_vft_original << std::endl;
-	std::memcpy(vgui_vft_hooked, *vgui_object, 0x10C);
+	//oSetRGBA = getvfunc<fnSetRGBA>(surface_vft, 15);
+	//oDrawFilledRect = getvfunc<fnDrawFilledRect>(surface_vft, 16);
+	//oSetTextRGBA = getvfunc<fnSetTextRGBA>(surface_vft, 25);
+	//oSetTextPosition = getvfunc<fnSetTextPosition>(surface_vft, 26);
+	//oDrawPrintText = getvfunc<fnDrawPrintText>(surface_vft, 28);
 
-	reinterpret_cast<void **>(vgui_vft_hooked)[41] = reinterpret_cast<void *>(myPaintTraverse);
-	*vgui_object = reinterpret_cast<void **>(vgui_vft_hooked);
+	////std::size_t const maxSize = 100;
+	////wchar_t aw[maxSize] = L"PRINT ME";
+	////std::size_t h = wcsnlen_s(aw, maxSize);
 
-	std::cout << "MyPaintTraverse 0x" << std::hex << myPaintTraverse << std::endl;
-	std::cout << "oPaintTraverse: 0x" << std::hex << oPaintTraverse << std::endl;
+	//void *vgui_vft_hooked = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 0x10C);
 
-	// TODO: NEEDS TESTING BELOW THIS POINT
-	// COMMENT OUT IF IT BUGS
-	while (1)
-	{
-		if (GetAsyncKeyState(VK_END))
-		{
-			std::cout << "Released" << std::endl;
-			break;
-		}
-		Sleep(10);
-	}
+	//std::cout << "Allocated bytes for vtable at 0x" << std::hex << vgui_vft_hooked << std::endl;
+	//std::cout << "Original at 0x" << std::hex << vgui_vft_original << std::endl;
+	//std::memcpy(vgui_vft_hooked, *vgui_object, 0x10C);
 
-	*vgui_object = vgui_vft_original;
-	HeapFree(GetProcessHeap(), 0, vgui_vft_hooked);
+	//reinterpret_cast<void **>(vgui_vft_hooked)[41] = reinterpret_cast<void *>(myPaintTraverse);
+	//*vgui_object = reinterpret_cast<void **>(vgui_vft_hooked);
+
+	//std::cout << "MyPaintTraverse 0x" << std::hex << myPaintTraverse << std::endl;
+	//std::cout << "oPaintTraverse: 0x" << std::hex << oPaintTraverse << std::endl;
+
+	//// TODO: NEEDS TESTING BELOW THIS POINT
+	//// COMMENT OUT IF IT BUGS
+	//while (1)
+	//{
+	//	if (GetAsyncKeyState(VK_END))
+	//	{
+	//		std::cout << "Released" << std::endl;
+	//		break;
+	//	}
+	//	Sleep(10);
+	//}
+
+	//*vgui_object = vgui_vft_original;
+	//HeapFree(GetProcessHeap(), 0, vgui_vft_hooked);
+
+	/////////////////////////////////////////////////
 
 	//oSetColor(surfaceObject, 0, 0, 0, 255);
 	//oDrawFilledRect(surfaceObject, 100, 100, 100, 100);

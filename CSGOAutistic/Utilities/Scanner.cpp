@@ -12,7 +12,7 @@
 
 #define WILDCARD_CHAR '?'
 
-namespace utilities
+namespace utils
 {
 	namespace scanner
 	{

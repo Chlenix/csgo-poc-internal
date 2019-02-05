@@ -1,6 +1,6 @@
 #pragma once
 
-namespace utilities
+namespace utils
 {
 	namespace scanner
 	{
