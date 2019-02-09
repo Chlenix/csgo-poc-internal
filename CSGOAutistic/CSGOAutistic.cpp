@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Utilities/Scanner.h"
 #include "Utilities/VTHook.h"
+#include "hooks.h"
 #include <iostream>
 #include <iomanip>
 #include <functional>
@@ -22,30 +23,6 @@ constexpr static std::uint32_t screen_height = 900;
 
 constexpr static std::uint32_t bar_width = 300;
 constexpr static std::uint32_t bar_height = 50;
-
-class InterfacesHead;
-class InterfaceNode;
-
-class InterfacesHead
-{
-public:
-	InterfaceNode* HeadNode; //0x0000 
-};//Size=0x0040
-
-typedef int(*oCapture)(void);
-
-class InterfaceNode
-{
-public:
-	oCapture fncGet; //0x0000 
-	char* pName; //0x0004 
-	InterfaceNode* pNext; //0x0008 
-};//Size=0x001C
-
-
-typedef struct pos_t {
-	float x, y, z;
-}pos, *ppos;
 
 typedef DWORD(__stdcall *hkCreateMove)(DWORD a1, DWORD a2);
 hkCreateMove oCreateMove;
@@ -72,45 +49,45 @@ void ***GlobalSurfaceObject;
 
 //constexpr std::ptrdiff_t offsetClientModeClass = 0x051712A4;
 
-void __fastcall myPaintTraverse(void *Panel, int edx, unsigned int vPanel, bool forceRepaint, bool allowForce)
-{
-	oPaintTraverse(Panel, vPanel, forceRepaint, allowForce);
-
-	static auto FocusOverlayPanel = 0;
-	static bool FoundPanel = false;
-
-	if (!FoundPanel)
-	{
-		const auto panelName = oGetName(Panel, vPanel);
-
-		if (!strcmp(panelName, "FocusOverlayPanel")) // or MatSystemTopPanel
-		{
-			FocusOverlayPanel = vPanel;
-			FoundPanel = true;
-		}
-		else
-			return;
-	}
-
-	if (FocusOverlayPanel != vPanel)
-	{
-		return;
-	}
-
-	std::size_t const maxSize = 100;
-	wchar_t aw[maxSize] = L"PRINT ME";
-	std::size_t h = wcsnlen_s(aw, maxSize);
-
-	//oSetTextRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
-	//oSetTextPosition(GlobalSurfaceObject, 200, 200);
-	//oDrawPrintText(GlobalSurfaceObject, aw, h, 0);
-
-	static int x = int(screen_width / 2) - int(bar_width / 2);
-	static int y = (screen_height / 2) - int(bar_height / 2);
-
-	oSetRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
-	oDrawFilledRect(GlobalSurfaceObject, x, y, x + bar_width, y + bar_height);
-}
+//void __fastcall myPaintTraverse(void *Panel, int edx, unsigned int vPanel, bool forceRepaint, bool allowForce)
+//{
+//	oPaintTraverse(Panel, vPanel, forceRepaint, allowForce);
+//
+//	static auto FocusOverlayPanel = 0;
+//	static bool FoundPanel = false;
+//
+//	if (!FoundPanel)
+//	{
+//		const auto panelName = oGetName(Panel, vPanel);
+//
+//		if (!strcmp(panelName, "FocusOverlayPanel")) // or MatSystemTopPanel
+//		{
+//			FocusOverlayPanel = vPanel;
+//			FoundPanel = true;
+//		}
+//		else
+//			return;
+//	}
+//
+//	if (FocusOverlayPanel != vPanel)
+//	{
+//		return;
+//	}
+//
+//	std::size_t const maxSize = 100;
+//	wchar_t aw[maxSize] = L"PRINT ME";
+//	std::size_t h = wcsnlen_s(aw, maxSize);
+//
+//	//oSetTextRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
+//	//oSetTextPosition(GlobalSurfaceObject, 200, 200);
+//	//oDrawPrintText(GlobalSurfaceObject, aw, h, 0);
+//
+//	static int x = int(screen_width / 2) - int(bar_width / 2);
+//	static int y = (screen_height / 2) - int(bar_height / 2);
+//
+//	oSetRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
+//	oDrawFilledRect(GlobalSurfaceObject, x, y, x + bar_width, y + bar_height);
+//}
 
 DWORD __stdcall myCreateMove(DWORD a1, DWORD a2)
 {
@@ -130,43 +107,6 @@ DWORD __stdcall myCreateMove(DWORD a1, DWORD a2)
 	return oCreateMove(a1, a2);
 }
 
-template <typename T>
-T getvfunc(void **vtable, unsigned int const &index)
-{
-	return reinterpret_cast<T>(vtable[index]);
-}
-
-std::uintptr_t GetInterface(char const *szInterfaceName, char const *szObjectName)
-{
-	InterfacesHead* pIntHead;
-
-	DWORD *pCreateInterfaceFn = reinterpret_cast<DWORD*>(GetProcAddress(GetModuleHandleA(szInterfaceName), "CreateInterface"));
-	pCreateInterfaceFn = (DWORD*)((DWORD)pCreateInterfaceFn + 0x4); // Later on replace this +4 with a search for the first jmp(0xE9)
-	int JmpConv = *(int*)((DWORD)pCreateInterfaceFn + 1); // + 1 to skip the opcode
-
-	pCreateInterfaceFn = (DWORD*)(5 + (DWORD)pCreateInterfaceFn + (DWORD)JmpConv); // Jmp is relative to the end of this line (hence the +5 bytes)
-
-	//std::cout << "pCreateInterfaceFn: 0x" << std::dec << pCreateInterfaceFn << std::endl;
-	// Step 2: Get the head of the list
-	// MOV ESI,DWORD PTR DS:[1A69F904]
-	pIntHead = *(InterfacesHead**)((DWORD)pCreateInterfaceFn + 0x6); // Later use a search instead
-
-	//std::cout << "pIntHead: 0x" << std::dec << pIntHead << std::endl;
-
-	if (pIntHead)
-	{
-		for (InterfaceNode* pNode = pIntHead->HeadNode; pNode; pNode = pNode->pNext)
-		{
-			if (std::string(pNode->pName).find(szObjectName) != std::string::npos)
-			{
-				std::uintptr_t obj = pNode->fncGet();
-				std::cout << szInterfaceName << "::" << szObjectName << "-> 0x" << std::hex << obj << std::endl;
-				return obj;
-			}
-		}
-	}
-}
-
 DWORD __stdcall MAIN()
 {
 	//std::ios_base::sync_with_stdio(false);
@@ -177,18 +117,22 @@ DWORD __stdcall MAIN()
 	freopen_s(&fpConsole, "CONOUT$", "wb", stdout);
 	freopen_s(&fpConsole, "CONOUT$", "wb", stderr);
 
+	hooks::init();
+
 	//GlobalSurfaceObject = reinterpret_cast<void ***>(GetInterface("vguimatsurface.dll", "VGUI_Surface031"));
-	auto vgui_object = reinterpret_cast<void ***>(GetInterface("vgui2.dll", "VGUI_Panel009"));
+	//auto vgui_object = reinterpret_cast<void ***>(interfaces::make("vgui2.dll", "VGUI_Panel009"));
 
 	//auto surface_vft = *GlobalSurfaceObject;
 	
-	utils::vtmanager::VTMananger vgui_vtable(vgui_object, 0x10C);
+	//utils::vt::VTMananger vgui_vtable(vgui_object, 0x10C);
 
-	vgui_vtable.prepare_function(myPaintTraverse, 41);
+	//vgui_vtable.prepare_function(myPaintTraverse, 41);
 	//vgui_vtable.commit_hook();
 
-	Sleep(15000);
-	vgui_vtable.release_hook();
+	//Sleep(5000);
+	//vgui_vtable.release_hook();
+
+	//std::cout << "Released" << std::endl;
 
 	//while (1)
 	//{
