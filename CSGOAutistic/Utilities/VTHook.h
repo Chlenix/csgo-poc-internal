@@ -13,8 +13,8 @@ namespace utils {
 		{
 		public:
 			VTMananger();
-			VTMananger(pvftable vt, std::size_t const &size);
-			VTMananger(std::uintptr_t vt, std::size_t const &size) : VTMananger(reinterpret_cast<pvftable>(vt), size) {};
+			VTMananger(pvftable vt, std::size_t const &size = 0);
+			VTMananger(std::uintptr_t vt, std::size_t const &size = 0) : VTMananger(reinterpret_cast<pvftable>(vt), size) {};
 			~VTMananger();
 
 			pvftable get_class();
@@ -45,11 +45,11 @@ namespace utils {
 			void restore_original_table();
 
 		private:
-			pvftable vt_object;
-			vftable vt_original;
-			vftable vt_clone;
+			pvftable vt_object = nullptr;
+			vftable vt_original = nullptr;
+			vftable vt_clone = nullptr;
 
-			std::size_t size;
+			std::size_t size = 0;
 			int a = 2;
 		};
 	}

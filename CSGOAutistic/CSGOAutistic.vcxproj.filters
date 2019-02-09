@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Utilities">
       <UniqueIdentifier>{336beebf-706e-4d34-a5a8-c00a238dac6b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Features">
+      <UniqueIdentifier>{40d00bec-068d-4a60-8089-66ea3052e349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Features">
+      <UniqueIdentifier>{bd170877-8089-4675-af0d-092d04d6b549}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -39,10 +45,10 @@
     <ClInclude Include="hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="index.hpp">
+    <ClInclude Include="interfaces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="interfaces.h">
+    <ClInclude Include="index.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,3 +1,4 @@
+#include "index.h"
 #include "hooks.h"
 #include "interfaces.h"
 
@@ -18,7 +19,6 @@ namespace hooks
 	void hook_vgui();
 	void hook_surface();
 
-	void __fastcall myPaintTraverse(void *, int, unsigned int, bool, bool);
 	void __stdcall paint_traverse(unsigned int vPanel, bool forceRepaint, bool allowForce);
 
 
@@ -51,17 +51,15 @@ namespace hooks
 	void hook_surface()
 	{
 		std::uintptr_t surface = interfaces::make("vguimatsurface.dll", "VGUI_Surface031");
-		surface_manager = std::make_unique<utils::vt::VTMananger>(surface, 0x4);
+		surface_manager = std::make_unique<utils::vt::VTMananger>(surface);
 	}
 
 	void hook_vgui()
 	{
 		std::uintptr_t vgui = interfaces::make("vgui2.dll", "VGUI_Panel009");
-
 		vgui_manager = std::make_unique<utils::vt::VTMananger>(vgui, 0x10C);
 
-		vgui_manager->prepare_function(paint_traverse, 41);
-
+		vgui_manager->prepare_function(paint_traverse, index::vgui::paint_traverse);
 		vgui_manager->commit_hook();
 	}
 
@@ -69,14 +67,16 @@ namespace hooks
 
 	void __stdcall paint_traverse(unsigned int vgui_panel_index, bool force_repaint, bool allow_force)
 	{
-		vgui_manager->get_original_vfunc<hkPaintTraverse>(41)(vgui_manager->get_class(), vgui_panel_index, force_repaint, allow_force);
+		// call original function
+		vgui_manager->get_original_vfunc<hkPaintTraverse>(index::vgui::paint_traverse)
+			(vgui_manager->get_class(), vgui_panel_index, force_repaint, allow_force);
 
 		static auto focus_overlay_panel = 0;
 		static bool found = false;
 
 		if (!found)
 		{
-			const auto panel_name = vgui_manager->get_original_vfunc<hkGetName>(36)(vgui_manager->get_class(), vgui_panel_index);
+			const auto panel_name = vgui_manager->get_original_vfunc<hkGetName>(index::vgui::get_name)(vgui_manager->get_class(), vgui_panel_index);
 
 			if (!std::strcmp(panel_name, "FocusOverlayPanel")) // or MatSystemTopPanel
 			{
@@ -98,60 +98,16 @@ namespace hooks
 
 		auto surface_object = surface_manager->get_class();
 
-		surface_manager->get_original_vfunc<fnSetTextRGBA>(25)(surface_object, 0, 0, 0, 255);
+		surface_manager->get_original_vfunc<fnSetTextRGBA>(index::surface::set_text_color)(surface_object, 0, 0, 0, 255);
 
-		surface_manager->get_original_vfunc<fnSetTextPosition>(26)(surface_object, 200, 200);
-		surface_manager->get_original_vfunc<fnDrawPrintText>(28)(surface_object, aw, h, 0);
+		surface_manager->get_original_vfunc<fnSetTextPosition>(index::surface::set_text_position)(surface_object, 200, 200);
+		surface_manager->get_original_vfunc<fnDrawPrintText>(index::surface::draw_print_text)(surface_object, aw, h, 0);
 
 		static int x = int(screen_width / 2) - int(bar_width / 2);
 		static int y = (screen_height / 2) - int(bar_height / 2);
 
-		surface_manager->get_original_vfunc<fnSetRGBA>(15)(surface_object, 0, 0, 0, 255);
-		surface_manager->get_original_vfunc<fnDrawFilledRect>(16)(surface_object, x, y, x + bar_width, y + bar_height);
-	}
-
-	void __fastcall myPaintTraverse(void *Panel, int edx, unsigned int vPanel, bool forceRepaint, bool allowForce)
-	{
-		//reinterpret_cast<hkPaintTraverse>(vgui_manager->get_original_f<int>(41))(Panel, vPanel, forceRepaint, allowForce);
-
-		vgui_manager->get_original_vfunc<hkPaintTraverse>(41)(Panel, vPanel, forceRepaint, allowForce);
-
-		vgui_manager->set_test_value(0x30);
-
-		//static auto FocusOverlayPanel = 0;
-		//static bool FoundPanel = false;
-
-		//if (!FoundPanel)
-		//{
-		//	const auto panelName = vgui_manager->get_original_vfunc<hkGetName>(36)(Panel, vPanel);
-
-		//	if (!strcmp(panelName, "FocusOverlayPanel")) // or MatSystemTopPanel
-		//	{
-		//		FocusOverlayPanel = vPanel;
-		//		FoundPanel = true;
-		//	}
-		//	else
-		//		return;
-		//}
-
-		//if (FocusOverlayPanel != vPanel)
-		//{
-		//	return;
-		//}
-
-		//std::size_t const maxSize = 100;
-		//wchar_t aw[maxSize] = L"PRINT ME";
-		//std::size_t h = wcsnlen_s(aw, maxSize);
-
-		//oSetTextRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
-		//oSetTextPosition(GlobalSurfaceObject, 200, 200);
-		//oDrawPrintText(GlobalSurfaceObject, aw, h, 0);
-
-		//static int x = int(screen_width / 2) - int(bar_width / 2);
-		//static int y = (screen_height / 2) - int(bar_height / 2);
-
-		//oSetRGBA(GlobalSurfaceObject, 0, 0, 0, 255);
-		//oDrawFilledRect(GlobalSurfaceObject, x, y, x + bar_width, y + bar_height);
+		surface_manager->get_original_vfunc<fnSetRGBA>(index::surface::set_color)(surface_object, 0, 0, 0, 255);
+		surface_manager->get_original_vfunc<fnDrawFilledRect>(index::surface::draw_filled_rect)(surface_object, x, y, x + bar_width, y + bar_height);
 	}
 #pragma endregion
 }

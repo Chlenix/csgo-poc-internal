@@ -2,4 +2,4 @@
 
 static HANDLE self;
 
-DWORD __stdcall MAIN();
+DWORD start();
