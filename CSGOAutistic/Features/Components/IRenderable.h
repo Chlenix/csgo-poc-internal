@@ -4,48 +4,51 @@
 #include <cstdint>
 namespace features
 {
-	namespace render
+	namespace components
 	{
-		namespace components
+		class IRenderable
 		{
-			class IRenderable
+		public:
+			IRenderable() = default;
+			IRenderable(valve::sdk::Vector2 position) :
+				position(position)
 			{
-			public:
-				IRenderable() = default;
-				IRenderable(valve::sdk::Vector2 position, valve::sdk::Color color) :
-					position(position),
-					color(color)
-				{};
+				this->set_color({ 0, 0, 0, 255 });
+			};
+			IRenderable(valve::sdk::Vector2 position, valve::sdk::Color color) :
+				position(position),
+				color(color)
+			{};
 
-				virtual void render() = 0;
+			virtual void render() = 0;
 
 #pragma region GETTERS_SETTERS
-				valve::sdk::Vector2 get_position()
-				{
-					return this->position;
-				}
+			valve::sdk::Vector2 get_position()
+			{
+				return this->position;
+			}
 
-				void set_position(valve::sdk::Vector2 v)
-				{
-					this->position = v;
-				}
+			void set_position(valve::sdk::Vector2 v)
+			{
+				this->position = v;
+			}
 
-				valve::sdk::Color get_color()
-				{
-					return this->color;
-				}
+			valve::sdk::Color get_color()
+			{
+				return this->color;
+			}
 
-				void set_color(valve::sdk::Color c)
-				{
-					this->color = c;
-				}
+			void set_color(valve::sdk::Color c)
+			{
+				this->color = c;
+			}
 
 #pragma endregion
-			private:
-				valve::sdk::Vector2 position;
-				valve::sdk::Color color;
-			};
-		}
+		private:
+			valve::sdk::Vector2 position;
+			valve::sdk::Color color;
+		};
 	}
+
 }
 

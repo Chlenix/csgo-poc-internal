@@ -2,6 +2,7 @@
 
 #include "Utilities/VTHook.h"
 #include <memory>
+#include <Windows.h>
 
 namespace hooks
 {

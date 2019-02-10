@@ -28,7 +28,24 @@ namespace hooks
 		hook_vgui();
 		hook_surface();
 
-		Sleep(3000);
+		while (1)
+		{
+			if (GetAsyncKeyState(VK_END))
+			{
+				std::cout << "Releasing ..." << std::endl;
+				break;
+			}
+
+			if (GetAsyncKeyState(VK_UP) & 1)
+				features::esp->increase_health(10);
+
+			if (GetAsyncKeyState(VK_DOWN) & 1)
+				features::esp->increase_health(-10);
+
+			Sleep(10);
+
+		}
+		
 		vgui_manager->release_hook();
 		surface_manager->release_hook();
 
@@ -79,7 +96,7 @@ namespace hooks
 			return;
 		}
 
-		features::e->render();
+		features::esp->render();
 
 		//std::size_t const maxSize = 100;
 		//wchar_t aw[maxSize] = L"PRINT ME";

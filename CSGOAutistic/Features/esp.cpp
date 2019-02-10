@@ -4,28 +4,29 @@
 namespace features
 {
 
-	esp::esp()
+	ESP::ESP()
 	{
 		init();
 	}
 
-	esp::~esp()
+	ESP::~ESP()
 	{
 	}
-	void esp::render()
+	void ESP::render()
 	{
-		for (features::render::components::HealthBar &health_bar : this->components)
+		for (auto &health_bar : this->components)
 		{
 			health_bar.render();
 		}
 	}
 
-	void esp::init()
+	void ESP::init()
 	{
-		features::render::components::HealthBar hb(100, 10, 100, { 300, 250 }, { 112, 255, 112, 255 });
+		int hp = 100;
+		features::components::HealthBar hb(hp, 10, hp << 1, { 300, 250 });
 		this->components.push_back(hb);
 	}
 
-	std::unique_ptr<esp> e = std::make_unique<esp>();
+	std::unique_ptr<ESP> esp = std::make_unique<ESP>();
 
 }
