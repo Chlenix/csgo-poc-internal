@@ -2,6 +2,8 @@
 #include "hooks.h"
 #include "interfaces.h"
 
+#include "Features\esp.h"
+
 #include "stdafx.h"
 
 namespace hooks
@@ -12,28 +14,14 @@ namespace hooks
 	constexpr static std::uint32_t bar_width = 300;
 	constexpr static std::uint32_t bar_height = 50;
 
-	std::unique_ptr<utils::vt::VTMananger> vgui_manager;
-	std::unique_ptr<utils::vt::VTMananger> surface_manager;
+	std::unique_ptr<utils::vt::VTMananger> vgui_manager = nullptr;
+	std::unique_ptr<utils::vt::VTMananger> surface_manager = nullptr;
 
 	void init();
 	void hook_vgui();
 	void hook_surface();
 
 	void __stdcall paint_traverse(unsigned int vPanel, bool forceRepaint, bool allowForce);
-
-
-#pragma region TYPEDEF_FUNCTIONS
-	/* VGUI */
-	typedef DWORD(__thiscall *hkPaintTraverse)(void *Panel, unsigned int vPanel, bool, bool);
-	typedef const char* (__thiscall *hkGetName)(void *, unsigned int);
-
-	/* SURFACE */
-	typedef void(__thiscall *fnSetTextPosition)(PVOID _this, int x, int y);
-	typedef void(__thiscall *fnSetTextRGBA)(PVOID _this, int r, int g, int b, int a);
-	typedef void(__thiscall *fnSetRGBA)(PVOID _this, int r, int g, int b, int a);
-	typedef void(__thiscall *fnDrawPrintText)(PVOID _this, wchar_t* text, int len, int wtf);
-	typedef void(__thiscall *fnDrawFilledRect)(PVOID _this, int x, int y, int w, int h);
-#pragma endregion
 	
 	void init()
 	{
@@ -45,7 +33,6 @@ namespace hooks
 		surface_manager->release_hook();
 
 		std::cout << "released" << std::endl;
-		std::cout << vgui_manager->get_value() << std::endl;
 	}
 
 	void hook_surface()
@@ -92,22 +79,24 @@ namespace hooks
 			return;
 		}
 
-		std::size_t const maxSize = 100;
-		wchar_t aw[maxSize] = L"PRINT ME";
-		std::size_t h = wcsnlen_s(aw, maxSize);
+		features::e->render();
 
-		auto surface_object = surface_manager->get_class();
+		//std::size_t const maxSize = 100;
+		//wchar_t aw[maxSize] = L"PRINT ME";
+		//std::size_t h = wcsnlen_s(aw, maxSize);
 
-		surface_manager->get_original_vfunc<fnSetTextRGBA>(index::surface::set_text_color)(surface_object, 0, 0, 0, 255);
+		//auto surface_object = surface_manager->get_class();
 
-		surface_manager->get_original_vfunc<fnSetTextPosition>(index::surface::set_text_position)(surface_object, 200, 200);
-		surface_manager->get_original_vfunc<fnDrawPrintText>(index::surface::draw_print_text)(surface_object, aw, h, 0);
+		//surface_manager->get_original_vfunc<fnSetTextRGBA>(index::surface::set_text_color)(surface_object, 0, 0, 0, 255);
 
-		static int x = int(screen_width / 2) - int(bar_width / 2);
-		static int y = (screen_height / 2) - int(bar_height / 2);
+		//surface_manager->get_original_vfunc<fnSetTextPosition>(index::surface::set_text_position)(surface_object, 200, 200);
+		//surface_manager->get_original_vfunc<fnDrawPrintText>(index::surface::draw_print_text)(surface_object, aw, h, 0);
 
-		surface_manager->get_original_vfunc<fnSetRGBA>(index::surface::set_color)(surface_object, 0, 0, 0, 255);
-		surface_manager->get_original_vfunc<fnDrawFilledRect>(index::surface::draw_filled_rect)(surface_object, x, y, x + bar_width, y + bar_height);
+		//static int x = int(screen_width / 2) - int(bar_width / 2);
+		//static int y = (screen_height / 2) - int(bar_height / 2);
+
+		//surface_manager->get_original_vfunc<fnSetRGBA>(index::surface::set_color)(surface_object, 0, 0, 0, 255);
+		//surface_manager->get_original_vfunc<fnDrawFilledRect>(index::surface::draw_filled_rect)(surface_object, x, y, x + bar_width, y + bar_height);
 	}
 #pragma endregion
 }

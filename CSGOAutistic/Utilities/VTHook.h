@@ -30,16 +30,6 @@ namespace utils {
 				return reinterpret_cast<T>(this->vt_original[index]);
 			}
 
-			inline void set_test_value(int a)
-			{
-				this->a = a;
-			}
-
-			inline int get_value()
-			{
-				return this->a;
-			}
-
 		private:
 			void init();
 			void restore_original_table();
@@ -50,7 +40,6 @@ namespace utils {
 			vftable vt_clone = nullptr;
 
 			std::size_t size = 0;
-			int a = 2;
 		};
 	}
 }

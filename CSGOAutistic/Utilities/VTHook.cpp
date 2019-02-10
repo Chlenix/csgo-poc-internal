@@ -25,6 +25,11 @@ namespace utils
 
 		void VTMananger::init()
 		{
+			if (this->vt_clone != nullptr)
+			{
+				return;
+			}
+
 			std::cout << "Original table: 0x" << std::hex << this->vt_original << std::endl;
 			std::cout << "Table Object: 0x" << std::hex << this->vt_object << std::endl;
 

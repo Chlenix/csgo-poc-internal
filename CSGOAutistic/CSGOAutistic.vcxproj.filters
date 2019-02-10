@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Features">
       <UniqueIdentifier>{bd170877-8089-4675-af0d-092d04d6b549}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Features\Components">
+      <UniqueIdentifier>{4aeea6a6-f781-4ada-87da-6fc1fc6278cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Features\Components">
+      <UniqueIdentifier>{66c6a169-5c95-4aef-8560-7613fd7e4b87}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -51,6 +57,21 @@
     <ClInclude Include="index.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Features\esp.h">
+      <Filter>Header Files\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities\render.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="sdk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Components\HealthBar.h">
+      <Filter>Header Files\Features\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\Components\IRenderable.h">
+      <Filter>Header Files\Features\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -70,6 +91,12 @@
     </ClCompile>
     <ClCompile Include="hooks.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\esp.cpp">
+      <Filter>Source Files\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\Components\HealthBar.cpp">
+      <Filter>Source Files\Features\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
