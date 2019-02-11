@@ -5,6 +5,7 @@
 
 #include "Utilities/Scanner.h"
 #include "Utilities/VTHook.h"
+#include "Features/esp.h"
 #include "CSGOAutistic.h"
 
 #include "hooks.h"
@@ -43,7 +44,11 @@ DWORD start()
 	freopen_s(&fpConsole, "CONOUT$", "wb", stdout);
 	freopen_s(&fpConsole, "CONOUT$", "wb", stderr);
 
+	features::esp->init();
+
 	hooks::init();
+	hooks::loop(true);
+	hooks::clean_up();
 
 	//LPVOID vftpClientModeSharedCsNormal = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, 0xEC);
 
@@ -93,9 +98,6 @@ DWORD start()
 
 	//// Unhook table
 	//*lppvClientModeCSNormalVTable = reinterpret_cast<void **>(original_vtable_baseaddr);
-
-	//std::ptrdiff_t dwEntityListOffset = utilities::scanner::FindPattern("client_panorama.dll", "x????xxxxx?x", "\xBB\x11\x11\x11\x11\x90\x83\xFF\x01\x7C\x11\xA1", 1);
-	//std::cout << "entity list offset: 0x" << std::hex << dwEntityListOffset << std::endl;
 
 	//HeapFree(GetProcessHeap(), 0, vftpClientModeSharedCsNormal);
 

@@ -42,17 +42,21 @@ namespace interfaces
 
 		//std::cout << "pIntHead: 0x" << std::dec << pIntHead << std::endl;
 
+		std::uintptr_t obj = 0u;
+
 		if (interface_head)
 		{
 			for (InterfaceNode* interface_node = interface_head->HeadNode; interface_node; interface_node = interface_node->pNext)
 			{
 				if (std::string(interface_node->pName).find(object_name) != std::string::npos)
 				{
-					std::uintptr_t obj = interface_node->get();
+					obj = interface_node->get();
 					std::cout << interface_name << "::" << object_name << "-> 0x" << std::hex << obj << std::endl;
-					return obj;
+					break;
 				}
 			}
 		}
+
+		return obj;
 	}
 }

@@ -11,20 +11,41 @@ namespace features
 		{
 		}
 
-		void HealthBar::render()
+		HealthBar::HealthBar(valve::sdk::PlayerEntity *p, std::uint32_t width, valve::sdk::Vector2 position) :
+			player(p),
+			width(width),
+			IRenderable(position)
 		{
-			utils::render::draw_filled_rect(this->get_position(), this->width, this->health << 1, this->get_color());
-			utils::render::draw_outlined_rect(this->get_position(), this->width, this->max_health << 1, { 0, 0, 0, 255 });
+
 		}
 
+		//void HealthBar::render()
+		//{
+		//	utils::render::draw_filled_rect(this->get_position(), this->width, this->health << 1, this->get_color());
+		//	utils::render::draw_outlined_rect(this->get_position(), this->width, this->max_health << 1, { 0, 0, 0, 255 });
+		//}
+
+		void HealthBar::render()
+		{
+			utils::render::draw_filled_rect(this->get_position(), this->width, this->player->health << 1, this->get_color());
+			utils::render::draw_outlined_rect(this->get_position(), this->width, this->max_health << 1, { 0, 0, 0, 255 });
+		}
 
 		valve::sdk::Color HealthBar::get_color()
 		{
 			static const float hue_coefficient = 1.28f; // max_hue / max_health
 
-			this->hue = this->health == 0 ? 1.0f : this->health * hue_coefficient;
-			return this->get_rgb(255u);
+			auto hue = this->player->health == 0 ? 1.0f : float(this->player->health * hue_coefficient);
+			return this->get_rgb(hue);
 		}
+
+		//valve::sdk::Color HealthBar::get_color()
+		//{
+		//	static const float hue_coefficient = 1.28f; // max_hue / max_health
+
+		//	auto hue = this->health == 0 ? 1.0f : float(this->health * hue_coefficient);
+		//	return this->get_rgb(hue);
+		//}
 
 		void HealthBar::set_health(std::int32_t health)
 		{
@@ -47,19 +68,19 @@ namespace features
 			std::cout << std::dec << this->health << std::endl;
 		}
 
-		valve::sdk::Color HealthBar::get_rgb(std::uint32_t const &alpha)
+		valve::sdk::Color HealthBar::get_rgb(float const &hue)
 		{
-			static const float saturation = 0.85f; // TODO: make it depend on the distance to the target 
+			static const float saturation = 0.85f;
 			static const float value = 1.00f;
 
 			static const float c = saturation * value;
 			static const float m = value - c;
 
-			float x = c * (1 - std::abs((std::fmodf((float(this->hue) / 60.0f), 2) - 1)));
+			float x = c * (1 - std::abs((std::fmodf((float(hue) / 60.0f), 2) - 1)));
 
 			float r, g, b;
 
-			switch (std::div(this->hue, 60).quot)
+			switch (std::div(int(hue), 60).quot)
 			{
 			case 0:
 				r = c; g = x; b = 0;
@@ -83,7 +104,7 @@ namespace features
 				return { 0, 0, 0, 255 };
 			}
 
-			return { this->crv(r, m), this->crv(g, m), this->crv(b, m), alpha };
+			return { this->crv(r, m), this->crv(g, m), this->crv(b, m), 255 };
 		}
 
 		constexpr std::uint32_t HealthBar::crv(float const & f, float const & m)

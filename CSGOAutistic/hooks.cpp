@@ -17,18 +17,19 @@ namespace hooks
 	std::unique_ptr<utils::vt::VTMananger> vgui_manager = nullptr;
 	std::unique_ptr<utils::vt::VTMananger> surface_manager = nullptr;
 
-	void init();
-	void hook_vgui();
-	void hook_surface();
-
 	void __stdcall paint_traverse(unsigned int vPanel, bool forceRepaint, bool allowForce);
 	
-	void init()
+	void clean_up()
 	{
-		hook_vgui();
-		hook_surface();
+		vgui_manager->release_hook();
+		surface_manager->release_hook();
 
-		while (1)
+		std::cout << "released" << std::endl;
+	}
+
+	void loop(bool condition)
+	{
+		while (condition)
 		{
 			if (GetAsyncKeyState(VK_END))
 			{
@@ -45,11 +46,14 @@ namespace hooks
 			Sleep(10);
 
 		}
-		
-		vgui_manager->release_hook();
-		surface_manager->release_hook();
+	}
 
-		std::cout << "released" << std::endl;
+	void init()
+	{
+		hook_vgui();
+		hook_surface();
+
+		std::cout << "hooked" << std::endl;
 	}
 
 	void hook_surface()

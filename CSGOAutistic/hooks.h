@@ -24,4 +24,9 @@ namespace hooks
 #pragma endregion
 
 	void init();
+	void clean_up();
+	void loop(bool condition);
+
+	void hook_vgui();
+	void hook_surface();
 }

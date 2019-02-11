@@ -14,6 +14,7 @@ namespace features
 		~ESP();
 
 		void render();
+		void init();
 
 		void increase_health(std::uint32_t health_modifier)
 		{
@@ -25,7 +26,6 @@ namespace features
 
 	private:
 		std::vector<features::components::HealthBar> components;
-		void init();
 	};
 
 	extern std::unique_ptr<ESP> esp;
