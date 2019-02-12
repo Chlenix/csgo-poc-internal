@@ -30,6 +30,8 @@ namespace valve
 			std::uint32_t y;
 		} Vector2;
 
+		typedef float ViewMatrix[16];
+
 		typedef struct
 		{
 			PlayerEntity *entity;

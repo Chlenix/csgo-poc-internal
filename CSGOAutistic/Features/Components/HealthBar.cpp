@@ -19,12 +19,6 @@ namespace features
 
 		}
 
-		//void HealthBar::render()
-		//{
-		//	utils::render::draw_filled_rect(this->get_position(), this->width, this->health << 1, this->get_color());
-		//	utils::render::draw_outlined_rect(this->get_position(), this->width, this->max_health << 1, { 0, 0, 0, 255 });
-		//}
-
 		void HealthBar::render()
 		{
 			utils::render::draw_filled_rect(this->get_position(), this->width, this->player->health << 1, this->get_color());
@@ -38,14 +32,6 @@ namespace features
 			auto hue = this->player->health == 0 ? 1.0f : float(this->player->health * hue_coefficient);
 			return this->get_rgb(hue);
 		}
-
-		//valve::sdk::Color HealthBar::get_color()
-		//{
-		//	static const float hue_coefficient = 1.28f; // max_hue / max_health
-
-		//	auto hue = this->health == 0 ? 1.0f : float(this->health * hue_coefficient);
-		//	return this->get_rgb(hue);
-		//}
 
 		void HealthBar::set_health(std::int32_t health)
 		{

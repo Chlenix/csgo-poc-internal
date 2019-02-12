@@ -43,8 +43,7 @@ namespace hooks
 			if (GetAsyncKeyState(VK_DOWN) & 1)
 				features::esp->increase_health(-10);
 
-			Sleep(10);
-
+			Sleep(50);
 		}
 	}
 
