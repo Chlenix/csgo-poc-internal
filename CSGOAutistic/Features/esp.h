@@ -18,23 +18,15 @@ namespace features
 		void scan_entities();
 		void render();
 
-		void increase_health(std::uint32_t health_modifier)
-		{
-			for (auto &v : this->components)
-			{
-				v.add_health(health_modifier);
-			}
-		}
-
 	private:
-		valve::sdk::Vector2 world_to_screen(valve::sdk::Vector3 const &world_position);
+		bool world_to_screen(valve::sdk::Vector3 const &world_position, valve::sdk::Vector2 &out_screen);
 
 	private:
 
 		valve::sdk::EntityList entity_list;
 		DirectX::XMFLOAT4X4 *view_matrix;
 
-		std::vector<features::components::HealthBar> components;
+		std::vector<valve::sdk::PlayerEntity *> renderable;
 		int iters = 0;
 	};
 
