@@ -37,12 +37,6 @@ namespace hooks
 				break;
 			}
 
-			if (GetAsyncKeyState(VK_UP) & 1)
-				features::esp->increase_health(10);
-
-			if (GetAsyncKeyState(VK_DOWN) & 1)
-				features::esp->increase_health(-10);
-
 			Sleep(50);
 		}
 	}
