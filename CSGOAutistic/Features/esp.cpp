@@ -23,6 +23,8 @@ namespace features
 
 		this->entity_list = reinterpret_cast<valve::sdk::EntityList>(client_panorama + entity_list_offset);
 		this->view_matrix = reinterpret_cast<DirectX::XMFLOAT4X4 *>(client_panorama + view_matrix_offset);
+
+		this->me = entity_list->entity;
 	}
 
 	void ESP::render()
@@ -37,7 +39,7 @@ namespace features
 			valve::sdk::Vector2 screen_position;
 			if (this->world_to_screen(player->origin, screen_position))
 			{
-				components::HealthBar{ player, 10u, screen_position }.render();
+				components::HealthBar{ player, 10u, screen_position, me->origin }.render();
 			}
 		}
 	}
@@ -106,15 +108,13 @@ namespace features
 	{
 		//std::cout << "esp init | matrix[0][0]: " << std::setprecision(3) << std::dec << this->view_matrix->m[0][0] << std::endl;
 
-		valve::sdk::PlayerEntity *me = entity_list->entity;
-
 		int i = 0;
 
 		for (valve::sdk::EntityList e = entity_list; e->entity; i++, e++)
 		{
 			valve::sdk::PlayerEntity *player = e->entity;
 
-			if (player == me)
+			if (player == this->me)
 			{
 				this->renderable.push_back(player);
 				//std::cout << "yay" << std::endl;
@@ -127,7 +127,7 @@ namespace features
 				continue;
 			}
 
-			if (player->team_number == me->team_number)
+			if (player->team_number == this->me->team_number)
 			{
 				//std::cout << "skipping because same team 0x" << std::hex << e->entity << std::endl;
 				continue;

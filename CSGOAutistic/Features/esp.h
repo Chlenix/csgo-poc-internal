@@ -15,14 +15,15 @@ namespace features
 		~ESP();
 
 		void init();
-		void scan_entities();
 		void render();
 
 	private:
 		bool world_to_screen(valve::sdk::Vector3 const &world_position, valve::sdk::Vector2 &out_screen);
+		void scan_entities();
 
 	private:
 
+		valve::sdk::PlayerEntity *me;
 		valve::sdk::EntityList entity_list;
 		DirectX::XMFLOAT4X4 *view_matrix;
 
