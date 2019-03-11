@@ -9,14 +9,14 @@ namespace valve
 	{
 		class PlayerEntity;
 
-		typedef struct
+		typedef struct Vector_
 		{
 			float x;
 			float y;
 			float z;
 		} Vector3;
 
-		typedef struct
+		typedef struct Color_
 		{
 			std::uint32_t r;
 			std::uint32_t g;
@@ -24,7 +24,7 @@ namespace valve
 			std::uint32_t a;
 		} Color;
 
-		typedef struct
+		typedef struct Vector2_
 		{
 			std::uint32_t x;
 			std::uint32_t y;
@@ -32,7 +32,7 @@ namespace valve
 
 		typedef float ViewMatrix[16];
 
-		typedef struct
+		typedef struct EntityList_
 		{
 			PlayerEntity *entity;
 			char pad_0[0xC];
@@ -52,7 +52,10 @@ namespace valve
 			char pad_0x0120[0xC]; //0x0120
 			valve::sdk::Vector3 view_angles; //0x012C 
 			valve::sdk::Vector3 origin; //0x0138
-		}; //Size=0x0144
+			char pad_0x144[0x2EE8]; // 0x0144
+			valve::sdk::Vector3 aim_punch_angle; // 0x302C
+			valve::sdk::Vector3 aim_punch_angle_velocity; // 0x3038
+		}; //Size=0x3044
 
 
 	}

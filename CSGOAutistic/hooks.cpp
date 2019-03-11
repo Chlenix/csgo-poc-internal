@@ -2,9 +2,12 @@
 #include "hooks.h"
 #include "interfaces.h"
 
-#include "Features\esp.h"
+#include "Features/esp.h"
+#include "Features/AimTracker.h"
 
 #include "stdafx.h"
+#include "Utilities/Scanner.h"
+#include "sdk.h"
 
 namespace hooks
 {	
@@ -43,6 +46,18 @@ namespace hooks
 
 	void init()
 	{
+		std::uintptr_t entity_list_offset = utils::scanner::FindPattern("client_panorama.dll", utils::masks::entity_list, utils::patterns::entity_list, 1);
+		auto client_panorama = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("client_panorama.dll"));
+		valve::sdk::EntityList entity_list = reinterpret_cast<valve::sdk::EntityList>(client_panorama + entity_list_offset);
+
+		std::cout << "WTF: 0x" << std::hex << entity_list_offset << std::endl;
+
+		features::aimTracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list);
+
+		std::cout << "AimTracker on: " << features::aimTracker->is_enabled() << std::endl;
+
+		features::aimTracker->track();
+
 		hook_vgui();
 		hook_surface();
 

@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Features\AimTracker.h" />
     <ClInclude Include="CSGOAutistic.h" />
     <ClInclude Include="Features\esp.h" />
     <ClInclude Include="Features\Components\HealthBar.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="index.h" />
     <ClInclude Include="interfaces.h" />
     <ClInclude Include="sdk.h" />
+    <ClInclude Include="Features\SpreadController.h" />
     <ClInclude Include="Utilities\render.h" />
     <ClInclude Include="Utilities\Scanner.h" />
     <ClInclude Include="stdafx.h" />
@@ -166,11 +168,13 @@
     <ClInclude Include="Utilities\VTHook.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Features\AimTracker.cpp" />
     <ClCompile Include="CSGOAutistic.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Features\esp.cpp" />
     <ClCompile Include="Features\Components\HealthBar.cpp" />
     <ClCompile Include="hooks.cpp" />
+    <ClCompile Include="Features\SpreadController.cpp" />
     <ClCompile Include="Utilities\Scanner.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

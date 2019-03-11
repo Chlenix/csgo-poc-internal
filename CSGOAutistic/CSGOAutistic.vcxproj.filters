@@ -72,6 +72,12 @@
     <ClInclude Include="Features\Components\IRenderable.h">
       <Filter>Header Files\Features\Components</Filter>
     </ClInclude>
+    <ClInclude Include="Features\SpreadController.h">
+      <Filter>Header Files\Features</Filter>
+    </ClInclude>
+    <ClInclude Include="Features\AimTracker.h">
+      <Filter>Header Files\Features</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -97,6 +103,12 @@
     </ClCompile>
     <ClCompile Include="Features\Components\HealthBar.cpp">
       <Filter>Source Files\Features\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\SpreadController.cpp">
+      <Filter>Source Files\Features</Filter>
+    </ClCompile>
+    <ClCompile Include="Features\AimTracker.cpp">
+      <Filter>Source Files\Features</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
