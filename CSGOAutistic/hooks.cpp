@@ -19,6 +19,7 @@ namespace hooks
 
 	std::unique_ptr<utils::vt::VTMananger> vgui_manager = nullptr;
 	std::unique_ptr<utils::vt::VTMananger> surface_manager = nullptr;
+	std::unique_ptr<utils::vt::VTMananger> vengine_manager = nullptr;
 
 	void __stdcall paint_traverse(unsigned int vPanel, bool forceRepaint, bool allowForce);
 	
@@ -26,6 +27,7 @@ namespace hooks
 	{
 		vgui_manager->release_hook();
 		surface_manager->release_hook();
+		vengine_manager->release_hook();
 
 		std::cout << "released" << std::endl;
 	}
@@ -57,7 +59,10 @@ namespace hooks
 		std::cout << "AimTracker on: " << features::aimTracker->is_enabled() << std::endl;
 
 		features::aimTracker->track();
-
+		
+		// BIG TEST BOYS
+		hook_vengine();
+		
 		hook_vgui();
 		hook_surface();
 
@@ -68,6 +73,28 @@ namespace hooks
 	{
 		std::uintptr_t surface = interfaces::make("vguimatsurface.dll", "VGUI_Surface031");
 		surface_manager = std::make_unique<utils::vt::VTMananger>(surface);
+	}
+
+	void hook_vengine()
+	{
+		std::uintptr_t vengine = interfaces::make("engine.dll", "VEngineClient014");
+		vengine_manager = std::make_unique<utils::vt::VTMananger>(vengine);
+
+		float test_angles[3] = { 80.0f, 150.0f, 0.0f };
+		float get_angles[3] = { 0 };
+
+		auto get_viewangles = vengine_manager->get_original_vfunc<fnGetViewAngles>(index::vengine::get_viewangles);
+		get_viewangles(vengine_manager->get_class(), get_angles);
+
+		auto set_viewangles = vengine_manager->get_original_vfunc<fnSetViewAngles>(index::vengine::set_viewangles);
+		std::cout << "SET VIEW ANGLES 0x" << std::hex << set_viewangles << std::endl;
+		set_viewangles(vengine_manager->get_class(), test_angles);
+
+		std::cout << "{";
+		std::cout << " Pitch: " << std::dec << get_angles[0] << " ";
+		std::cout << " Yaw: " << std::dec << get_angles[1] << " ";
+		std::cout << "}" << std::endl;
+
 	}
 
 	void hook_vgui()

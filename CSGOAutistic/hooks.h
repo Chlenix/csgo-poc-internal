@@ -21,6 +21,9 @@ namespace hooks
 	typedef void(__thiscall *fnDrawPrintText)(PVOID _this, wchar_t* text, int len, int wtf);
 	typedef void(__thiscall *fnDrawFilledRect)(PVOID _this, int x, int y, int w, int h);
 	typedef void(__thiscall *fnDrawOutlinedRect)(PVOID _this, int x, int y, int w, int h);
+
+	typedef void(__thiscall *fnGetViewAngles)(PVOID _this, float *outAngles);
+	typedef void(__thiscall *fnSetViewAngles)(PVOID _this, float *angles);
 #pragma endregion
 
 	void init();
@@ -29,4 +32,5 @@ namespace hooks
 
 	void hook_vgui();
 	void hook_surface();
+	void hook_vengine();
 }
