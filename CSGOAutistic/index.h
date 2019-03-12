@@ -8,6 +8,11 @@ namespace index
 		constexpr ::std::uint32_t get_name = 36;
 	}
 
+	namespace clientmode
+	{
+		constexpr ::std::uint32_t create_move = 24;
+	}
+
 	namespace vengine
 	{
 		constexpr ::std::uint32_t get_viewangles = 18;

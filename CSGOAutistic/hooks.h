@@ -4,12 +4,19 @@
 #include <memory>
 #include <Windows.h>
 
+#define HK __stdcall
+
 namespace hooks
 {
 	extern std::unique_ptr<utils::vt::VTMananger> vgui_manager;
 	extern std::unique_ptr<utils::vt::VTMananger> surface_manager;
+	extern std::unique_ptr<utils::vt::VTMananger> vengine_manager;
+	extern std::unique_ptr<utils::vt::VTMananger> clientmode_manager;
 
 #pragma region TYPEDEF_FUNCTIONS
+	/* CLIENTMODE */
+	typedef bool(__thiscall *hkCreateMove)(PVOID _this, float input_sample_time, DWORD *user_cmd);
+
 	/* VGUI */
 	typedef DWORD(__thiscall *hkPaintTraverse)(void *Panel, unsigned int vPanel, bool, bool);
 	typedef const char* (__thiscall *hkGetName)(void *, unsigned int);
@@ -33,4 +40,5 @@ namespace hooks
 	void hook_vgui();
 	void hook_surface();
 	void hook_vengine();
+	void hook_clientmode();
 }

@@ -1,18 +1,21 @@
 #include "AimTracker.h"
 #include <DirectXMath.h>
 #include <iomanip>
+#include "../index.h"
+#include "../hooks.h"
 
 namespace features 
 {
 
-	AimTracker::AimTracker() 
+	AimTracker::AimTracker()
 	{
 		this->enabled = true;
 	}
 
-	AimTracker::AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list) :
+	AimTracker::AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list, utils::vt::VTMananger *vengine) :
 		me(me),
-		entity_list(entity_list)
+		entity_list(entity_list),
+		vengine(vengine)
 	{
 		init();
 	}
@@ -32,6 +35,25 @@ namespace features
 	{
 		this->enabled = true;
 	}
+	void AimTracker::set_viewangles(float * angles)
+	{
+		auto fn = hooks::vengine_manager->get_original_vfunc<hooks::fnSetViewAngles>(index::vengine::set_viewangles);
+		fn(hooks::vengine_manager->get_class(), angles);
+	}
+
+	void AimTracker::clamp_pitch(float & pitch)
+	{
+		if (pitch < -89.0f)
+		{
+			pitch = -89.0f;
+		}
+
+		else if (pitch > 89.0f)
+		{
+			pitch = 89.0f;
+		}
+	}
+
 	void AimTracker::track()
 	{	
 		DirectX::XMFLOAT3 direction;
@@ -49,6 +71,14 @@ namespace features
 			return;
 		}
 
+		// HOW TO Call setupbones
+		/*matrix3x4a_t MatrixArray[128];
+		// entity is localplayer
+		if (!pEntity->SetupBones(_THIS, &MatrixArray[0], 128, 0x0100, 0))
+			return;*/
+
+		// SetupBones is currently in IClientRenderable (C_BasePlayer)
+
 		DirectX::XMVECTOR enemy_position = DirectX::XMLoadFloat3(reinterpret_cast<DirectX::XMFLOAT3 *>(&enemy->origin));
 		DirectX::XMVECTOR my_position = DirectX::XMLoadFloat3(reinterpret_cast<DirectX::XMFLOAT3 *>(&me->origin));
 
@@ -62,17 +92,14 @@ namespace features
 		// But remember to account for 89.0 start Tan 
 		// maybe pitch = 89 - arccos(z/hyp)
 		float pitch = DirectX::XMConvertToDegrees(std::acosf(direction.z)) - 90.0f;
+		clamp_pitch(pitch); // it's 5 a.m. go to sleep
 
-		//clamp_pitch(pitch); // it's 5 a.m. go to sleep
-
-		std::cout << "Pitch Angle: " << std::dec << std::setprecision(8) << DirectX::XMConvertToDegrees(std::acosf(direction.z)) << std::endl;
-		std::cout << "Yaw: " << std::dec << std::setprecision(8) << yaw << std::endl;
-		std::cout << "Pitch: " << std::dec << std::setprecision(8) << pitch << std::endl;
-		std::cout << "X: " << std::dec << direction.x;
-		std::cout << "|Y: " << std::dec << direction.y;
-		std::cout << "|Z: " << std::dec << direction.z;
 		std::cout << std::endl;
+
+		float angles[3] = { pitch, yaw, 0.0f };
+
+		this->set_viewangles(angles);
 	}
 
-	std::unique_ptr<AimTracker> aimTracker = std::make_unique<AimTracker>();
+	std::unique_ptr<AimTracker> aim_tracker = std::make_unique<AimTracker>();
 }

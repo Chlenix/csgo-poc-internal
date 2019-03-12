@@ -21,10 +21,16 @@ namespace hooks
 	std::unique_ptr<utils::vt::VTMananger> surface_manager = nullptr;
 	std::unique_ptr<utils::vt::VTMananger> vengine_manager = nullptr;
 
+	std::unique_ptr<utils::vt::VTMananger> clientmode_manager = nullptr;
+
+	bool HK create_move(float input_sample_time, DWORD *user_cmd);
 	void __stdcall paint_traverse(unsigned int vPanel, bool forceRepaint, bool allowForce);
 	
 	void clean_up()
 	{
+		// release clientmode first
+		clientmode_manager->release_hook();
+
 		vgui_manager->release_hook();
 		surface_manager->release_hook();
 		vengine_manager->release_hook();
@@ -36,13 +42,18 @@ namespace hooks
 	{
 		while (condition)
 		{
+
+			//features::aim_tracker->track();
+
 			if (GetAsyncKeyState(VK_END))
 			{
 				std::cout << "Releasing ..." << std::endl;
 				break;
 			}
 
-			Sleep(50);
+			//features::aim_tracker->track();
+
+			Sleep(10);
 		}
 	}
 
@@ -54,17 +65,18 @@ namespace hooks
 
 		std::cout << "WTF: 0x" << std::hex << entity_list_offset << std::endl;
 
-		features::aimTracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list);
+		features::aim_tracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list, reinterpret_cast<utils::vt::VTMananger *>(vengine_manager.get()));
 
-		std::cout << "AimTracker on: " << features::aimTracker->is_enabled() << std::endl;
-
-		features::aimTracker->track();
+		std::cout << "AimTracker on: " << features::aim_tracker->is_enabled() << std::endl;
 		
 		// BIG TEST BOYS
 		hook_vengine();
-		
+
 		hook_vgui();
 		hook_surface();
+
+		// hook clientmode's createmove final
+		hook_clientmode();
 
 		std::cout << "hooked" << std::endl;
 	}
@@ -79,22 +91,6 @@ namespace hooks
 	{
 		std::uintptr_t vengine = interfaces::make("engine.dll", "VEngineClient014");
 		vengine_manager = std::make_unique<utils::vt::VTMananger>(vengine);
-
-		float test_angles[3] = { 80.0f, 150.0f, 0.0f };
-		float get_angles[3] = { 0 };
-
-		auto get_viewangles = vengine_manager->get_original_vfunc<fnGetViewAngles>(index::vengine::get_viewangles);
-		get_viewangles(vengine_manager->get_class(), get_angles);
-
-		auto set_viewangles = vengine_manager->get_original_vfunc<fnSetViewAngles>(index::vengine::set_viewangles);
-		std::cout << "SET VIEW ANGLES 0x" << std::hex << set_viewangles << std::endl;
-		set_viewangles(vengine_manager->get_class(), test_angles);
-
-		std::cout << "{";
-		std::cout << " Pitch: " << std::dec << get_angles[0] << " ";
-		std::cout << " Yaw: " << std::dec << get_angles[1] << " ";
-		std::cout << "}" << std::endl;
-
 	}
 
 	void hook_vgui()
@@ -104,6 +100,17 @@ namespace hooks
 
 		vgui_manager->prepare_function(paint_traverse, index::vgui::paint_traverse);
 		vgui_manager->commit_hook();
+	}
+
+	void hook_clientmode()
+	{
+		std::ptrdiff_t clientmode_offset = utils::scanner::FindPattern("client_panorama.dll", utils::masks::clientmode_shared, utils::patterns::clientmode_shared, 1);
+		auto panorama_module = reinterpret_cast<std::uintptr_t>(GetModuleHandleA("client_panorama.dll"));
+
+		clientmode_manager = std::make_unique<utils::vt::VTMananger>(*reinterpret_cast<utils::vt::pvftable *>(panorama_module + clientmode_offset), 0x11C);
+		
+		clientmode_manager->prepare_function(create_move, index::clientmode::create_move);
+		clientmode_manager->commit_hook();
 	}
 
 #pragma region HOOKED_FUNCTIONS
@@ -153,6 +160,26 @@ namespace hooks
 
 		//surface_manager->get_original_vfunc<fnSetRGBA>(index::surface::set_color)(surface_object, 0, 0, 0, 255);
 		//surface_manager->get_original_vfunc<fnDrawFilledRect>(index::surface::draw_filled_rect)(surface_object, x, y, x + bar_width, y + bar_height);
+	}
+
+	bool HK create_move(float input_sample_time, DWORD *user_cmd)
+	{
+		clientmode_manager->get_original_vfunc<hkCreateMove>(index::clientmode::create_move)
+			(clientmode_manager->get_class(), input_sample_time, user_cmd);
+
+		DWORD command_number = *(user_cmd + 1);
+
+		if (!command_number)
+		{
+			return true;
+		}
+
+		/* Logic Block: */
+		features::aim_tracker->track();
+
+		/* Logic Block End */
+
+		return false;
 	}
 #pragma endregion
 }
