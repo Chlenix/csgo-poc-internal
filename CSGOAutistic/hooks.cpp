@@ -65,11 +65,10 @@ namespace hooks
 
 		std::cout << "WTF: 0x" << std::hex << entity_list_offset << std::endl;
 
-		features::aim_tracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list, reinterpret_cast<utils::vt::VTMananger *>(vengine_manager.get()));
+		features::aim_tracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list);
 
 		std::cout << "AimTracker on: " << features::aim_tracker->is_enabled() << std::endl;
-		
-		// BIG TEST BOYS
+
 		hook_vengine();
 
 		hook_vgui();

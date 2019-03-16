@@ -3,7 +3,9 @@
 #include "../Utilities/VTHook.h"
 #include "../sdk.h"
 
+#include <DirectXMath.h>
 #include <functional>
+#include <deque>
 
 namespace features
 {
@@ -15,15 +17,16 @@ namespace features
 
 		valve::sdk::PlayerEntity *me;
 		valve::sdk::EntityList entity_list;
-		utils::vt::VTMananger *vengine;
 
 	public:
 		AimTracker();
-		AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list, utils::vt::VTMananger *vengine);
+		AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list);
 		~AimTracker();
 
 		bool is_enabled();
 		void toggle();
+
+		DirectX::XMVECTOR target_nearest(std::deque<valve::sdk::PlayerEntity*> candidates);
 
 		void track();
 

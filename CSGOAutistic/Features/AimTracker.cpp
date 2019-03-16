@@ -1,5 +1,4 @@
 #include "AimTracker.h"
-#include <DirectXMath.h>
 #include <iomanip>
 #include "../index.h"
 #include "../hooks.h"
@@ -7,15 +6,16 @@
 namespace features 
 {
 
+	#define OR ||
+
 	AimTracker::AimTracker()
 	{
 		this->enabled = true;
 	}
 
-	AimTracker::AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list, utils::vt::VTMananger *vengine) :
+	AimTracker::AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list) :
 		me(me),
-		entity_list(entity_list),
-		vengine(vengine)
+		entity_list(entity_list)
 	{
 		init();
 	}
@@ -31,6 +31,48 @@ namespace features
 	{
 		this->enabled = !this->enabled;
 	}
+
+	DirectX::XMVECTOR AimTracker::target_nearest(std::deque<valve::sdk::PlayerEntity*> candidates)
+	{
+		DirectX::XMVECTOR my_eyes = DirectX::XMLoadFloat3(reinterpret_cast<DirectX::XMFLOAT3 *>(&(me->origin + me->vec_view_offset)));
+
+		DirectX::XMVECTOR closest_vector;
+		valve::sdk::PlayerEntity *nearest_enemy = NULL;
+		DirectX::XMVECTOR last_diff;
+
+		for (auto &enemy : candidates)
+		{
+			if (!nearest_enemy)
+			{
+				auto enemy_bones = *reinterpret_cast<valve::sdk::bone_matrix *>(enemy->bone_matrix);
+				auto head_bone = reinterpret_cast<valve::sdk::Bone *>(&enemy_bones[8]);
+				DirectX::XMVECTOR enemy_head = DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(head_bone->x, head_bone->y, head_bone->z));
+
+				last_diff = DirectX::XMVectorSubtract(enemy_head, my_eyes);
+				closest_vector = DirectX::XMVector3LengthEst(last_diff);
+				nearest_enemy = enemy;
+
+			}
+			else
+			{
+				auto enemy_bones = *reinterpret_cast<valve::sdk::bone_matrix *>(enemy->bone_matrix);
+				auto head_bone = reinterpret_cast<valve::sdk::Bone *>(&enemy_bones[8]);
+				DirectX::XMVECTOR enemy_head = DirectX::XMLoadFloat3(&DirectX::XMFLOAT3(head_bone->x, head_bone->y, head_bone->z));
+
+				DirectX::XMVECTOR diff = DirectX::XMVectorSubtract(enemy_head, my_eyes);
+				DirectX::XMVECTOR length = DirectX::XMVector3LengthEst(diff);
+				if (DirectX::XMVector3LessOrEqual(length, closest_vector))
+				{
+					closest_vector = length;
+					nearest_enemy = enemy;
+					last_diff = diff;
+				}
+			}
+		}
+
+		return last_diff;
+	}
+
 	void AimTracker::init()
 	{
 		this->enabled = true;
@@ -58,31 +100,40 @@ namespace features
 	{	
 		DirectX::XMFLOAT3 direction;
 
-		valve::sdk::PlayerEntity *enemy = (this->entity_list + 1)->entity;
+		std::deque< valve::sdk::PlayerEntity *> enemy_pool;
 
-		if (!enemy)
+		int i = 0;
+		for (valve::sdk::EntityList e = entity_list + 1; i < 63; i++, e++)
 		{
-			std::cout << "no enemy" << std::endl;
+			valve::sdk::PlayerEntity *p = e->entity;
+
+			if (!p
+				OR (p->team_number == me->team_number)
+				OR (p->is_dormant & 0x100)
+				OR (p->health < 1))
+			{
+				continue;
+			}
+
+			enemy_pool.push_back(p);
+		}
+
+		if (enemy_pool.empty())
+		{
 			return;
 		}
 
-		if (enemy->is_dormant & 0x100) {
-			std::cout << "Out of range ..." << std::endl;
-			return;
-		}
+		DirectX::XMVECTOR enemy_direction = this->target_nearest(enemy_pool);
 
-		// HOW TO Call setupbones
+		 //HOW TO Call setupbones
 		/*matrix3x4a_t MatrixArray[128];
-		// entity is localplayer
+		 entity is localplayer
 		if (!pEntity->SetupBones(_THIS, &MatrixArray[0], 128, 0x0100, 0))
 			return;*/
 
-		// SetupBones is currently in IClientRenderable (C_BasePlayer)
+		 //SetupBones is currently in IClientRenderable (C_BasePlayer)
 
-		DirectX::XMVECTOR enemy_position = DirectX::XMLoadFloat3(reinterpret_cast<DirectX::XMFLOAT3 *>(&enemy->origin));
-		DirectX::XMVECTOR my_position = DirectX::XMLoadFloat3(reinterpret_cast<DirectX::XMFLOAT3 *>(&me->origin));
-
-		DirectX::XMStoreFloat3(&direction, DirectX::XMVector3Normalize(DirectX::XMVectorSubtract(enemy_position, my_position)));
+		DirectX::XMStoreFloat3(&direction, DirectX::XMVector3Normalize(enemy_direction));
 		
 		// angle between
 		float yaw = DirectX::XMConvertToDegrees(std::atan2f(direction.y, direction.x));
