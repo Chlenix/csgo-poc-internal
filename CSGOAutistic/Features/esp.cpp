@@ -110,6 +110,7 @@ namespace features
 
 		int i = 0;
 
+		// TODO: Fix this shitty for loop with condition: e < PLAYER_COUNT, instead of e->entity
 		for (valve::sdk::EntityList e = entity_list; e->entity; i++, e++)
 		{
 			valve::sdk::PlayerEntity *player = e->entity;
