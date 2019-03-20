@@ -164,7 +164,6 @@ namespace features
 
 		clamp_pitch(angles[0]);
 
-		// replace with queue of 
 		this->set_viewangles(angles);
 	}
 
