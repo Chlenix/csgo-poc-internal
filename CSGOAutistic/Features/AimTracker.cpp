@@ -5,12 +5,12 @@
 
 namespace features 
 {
-
 	#define OR ||
 
 	AimTracker::AimTracker()
 	{
 		this->enabled = true;
+		this->no_recoil = false;
 	}
 
 	AimTracker::AimTracker(valve::sdk::PlayerEntity *me, valve::sdk::EntityList entity_list) :
@@ -83,6 +83,12 @@ namespace features
 		fn(hooks::vengine_manager->get_class(), angles);
 	}
 
+	void AimTracker::adjust_angles(float * angles)
+	{
+		angles[0] -= me->aim_punch_angle.x * 2.f;
+		angles[1] -= me->aim_punch_angle.y * 2.f;
+	}
+
 	void AimTracker::clamp_pitch(float & pitch)
 	{
 		if (pitch < -89.0f)
@@ -96,7 +102,12 @@ namespace features
 		}
 	}
 
-	void AimTracker::track()
+	void AimTracker::enable_no_recoil()
+	{
+		this->no_recoil = true;
+	}
+
+	void AimTracker::track(DWORD *user_cmd)
 	{	
 		DirectX::XMFLOAT3 direction;
 
@@ -143,11 +154,15 @@ namespace features
 		// But remember to account for 89.0 start Tan 
 		// maybe pitch = 89 - arccos(z/hyp)
 		float pitch = DirectX::XMConvertToDegrees(std::acosf(direction.z)) - 90.0f;
-		clamp_pitch(pitch); // it's 5 a.m. go to sleep
-
-		std::cout << std::endl;
 
 		float angles[3] = { pitch, yaw, 0.0f };
+
+		if (this->no_recoil)
+		{
+			this->adjust_angles(angles);
+		}
+
+		clamp_pitch(angles[0]);
 
 		this->set_viewangles(angles);
 	}

@@ -14,6 +14,7 @@ namespace features
 
 	private:
 		bool enabled;
+		bool no_recoil;
 
 		valve::sdk::PlayerEntity *me;
 		valve::sdk::EntityList entity_list;
@@ -28,11 +29,13 @@ namespace features
 
 		DirectX::XMVECTOR target_nearest(std::deque<valve::sdk::PlayerEntity*> candidates);
 
-		void track();
+		void track(DWORD *user_cmd);
+		void enable_no_recoil();
 
 	private:
 		void init();
 		void set_viewangles(float *angles);
+		void adjust_angles(float *angles);
 		void clamp_pitch(float& pitch);
 
 		float const MAX_PITCH = 89.0f;

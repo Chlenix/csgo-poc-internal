@@ -66,6 +66,7 @@ namespace hooks
 		std::cout << "WTF: 0x" << std::hex << entity_list_offset << std::endl;
 
 		features::aim_tracker = std::make_unique<features::AimTracker>(entity_list->entity, entity_list);
+		features::aim_tracker->enable_no_recoil();
 
 		std::cout << "AimTracker on: " << features::aim_tracker->is_enabled() << std::endl;
 
@@ -174,7 +175,7 @@ namespace hooks
 		}
 
 		/* Logic Block: */
-		features::aim_tracker->track();
+		features::aim_tracker->track(user_cmd);
 
 		/* Logic Block End */
 
